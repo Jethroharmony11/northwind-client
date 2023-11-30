@@ -1,0 +1,63 @@
+<style>
+    td {
+        text-align: right;
+        font-weight: bold;
+    }
+    th {
+        text-align: left;
+        font-weight: normal;
+        text-transform: uppercase;
+    }
+</style>
+
+<body>
+    <select id="catlist">
+        <option value="">Select the category</option>
+    </select>
+    <select id="prodlist"></select>
+    <table id="details"></table>
+
+    <script>
+        // Declare variables
+        const catlist = document.getElementById("catlist");
+        const prodlist = document.getElementById("prodlist");
+        const details = document.getElementById("details");
+
+        // Fetch categories
+        fetch("http://localhost:8081/api/categories")
+            .then(r => r.json())
+            .then(data => {
+                data.forEach(c => {
+                    catlist.innerHTML += `<option value="${c.categoryId}">${c.name}</option>`;
+                });
+            });
+
+        // Handle category change
+        catlist.addEventListener("change", e => {
+            fetch("http://localhost:8081/api/products")
+                .then(r => r.json())
+                .then(data => {
+                    prodlist.innerHTML = "";
+                    data.filter(p => p.categoryId == catlist.value).forEach(p => {
+                        prodlist.innerHTML += `<option value="${p.productId}">${p.productName}</option>`;
+                    });
+                });
+        });
+
+        // Handle product change
+        prodlist.addEventListener("change", e => {
+            fetch("http://localhost:8081/api/products/" + prodlist.value)
+                .then(r => r.json())
+                .then(p => {
+                    details.innerHTML = "";
+                    details.innerHTML += `<tr><th>Product Id:</th><td>${p.productId}</td></tr>`;
+                    details.innerHTML += `<tr><th>Product Name:</th><td>${p.productName}</td></tr>`;
+                    details.innerHTML += `<tr><th>Units in Stock:</th><td>${p.unitsInStock}</td></tr>`;
+                    details.innerHTML += `<tr><th>Unit Price:</th><td>$${Number(p.unitPrice).toFixed(2)}</td></tr>`;
+                    details.innerHTML += `<tr><th>Discontinued:</th><td>${p.discontinued}</td></tr>`;
+                    details.innerHTML += `<tr><th>Supplier:</th><td>${p.supplier}</td></tr>`;
+                    
+                });
+        });
+    </script>
+</body>
